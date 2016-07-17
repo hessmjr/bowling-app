@@ -1,0 +1,5 @@
+source "https://supermarket.chef.io"
+
+cookbook 'BowlApp', path: './BowlApp'
+cookbook 'mongodb'
+cookbook 'poise-python'

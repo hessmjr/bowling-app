@@ -1,0 +1,8 @@
+name             'BowlApp'
+maintainer       'Mark Hess'
+maintainer_email 'na'
+license          'All rights reserved'
+description      'Deployment script for BowlApp'
+version          '0.1.0'
+depends          'mongodb'
+depends          'poise-python'
