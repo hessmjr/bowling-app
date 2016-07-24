@@ -4,3 +4,4 @@ requests==2.10.0
 Werkzeug==0.11.10
 mongoengine==0.10.6
 flask_restful==0.3.5
+bson==0.4.3
