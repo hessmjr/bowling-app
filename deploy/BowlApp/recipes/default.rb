@@ -9,9 +9,12 @@ include_recipe "mongodb::default"
 
 # python runtime version and app requirements
 python_runtime '2'
-# pip_requirements '/home/BowlApp/requirements.txt'
+pip_requirements '/home/mark/BowlApp/requirements.txt'
 
 # # start flask app
 # execute "start app" do
 #     command "flask BowlApp"
+# end
+# python_execute 'myapp.py' do
+#   user 'myuser'
 # end

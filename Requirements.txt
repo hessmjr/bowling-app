@@ -1,11 +1,6 @@
-click==6.6
 Flask==0.11.1
-idna==2.1
-itsdangerous==0.24
 Jinja2==2.8
-MarkupSafe==0.23
 requests==2.10.0
-requests-file==1.4
-six==1.10.0
-vboxapi==1.0
 Werkzeug==0.11.10
+mongoengine==0.10.6
+flask_restful==0.3.5
