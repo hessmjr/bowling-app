@@ -31,7 +31,7 @@ class Game(Document):
     players = ListField(EmbeddedDocumentField(Player), min_length=1,
                         max_length=4, required=True)
     active = BooleanField(default=True)
-    dateStarted = DateTimeField(default=datetime.now)
+    date_started = DateTimeField(default=datetime.now)
     meta = {'collection': 'games'}
 
     @queryset_manager

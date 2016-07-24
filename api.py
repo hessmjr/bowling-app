@@ -1,5 +1,6 @@
 from flask import Flask, Response, request
 from flask_restful import Api, Resource
+from bson import ObjectId
 import json
 
 from game import Game, Player
@@ -44,27 +45,26 @@ class AllGames(Resource):
         try:
             for game in Game.games:
                 game_info = dict()
-                players = []
 
                 # get useful info from each game
                 game_info["game_id"] = str(game.id)
                 game_info["active"] = game.active
 
                 # get each player's name
+                players = []
                 for player in game.players:
                     players.append(player.name)
                 game_info["players"] = players
 
-                # return complete game listing
                 all_games.append(game_info)
+
+            # return list of all games
+            return all_games
 
         # any processing errors notify user
         except Exception as error:
             print error.message
             return server_issue()
-
-        # return list of all games
-        return all_games
 
     def post(self):
         """
@@ -87,26 +87,58 @@ class AllGames(Resource):
             new_game = game.save()
             game_id = str(new_game.id)
 
+            # return newly created game ID to user
+            message = {
+                "gameID": game_id,
+                "message": "New game created."
+            }
+            return Response(json.dumps(message), status=201,
+                            mimetype='application/json')
+
         # any processing errors notify user
         except Exception as error:
             print error.message
             return server_issue()
 
-        # return newly created game ID to user
-        message = {
-            "gameID": game_id,
-            "message": "New game created."
-        }
-        return Response(json.dumps(message), status=201,
-                        mimetype='application/json')
-
 
 class Games(Resource):
 
     def get(self, game_id):
-        Game.games()
+        """
 
-        return game_id
+        :param game_id:
+        :return:
+        """
+        try:
+            # try to query for game id and convert to python object
+            game = Game.games.get(id=ObjectId(game_id))
+
+            # build game info object
+            game_info = {
+                "id": str(game.id),
+                "active": game.active,
+                "date_started": str(game.date_started)
+            }
+            print game.date_started
+
+            # build player info
+            all_players = []
+            for player in game.players:
+                player_info = {
+                    "name": player.name,
+                    "active": player.active,
+                    "scores": player.raw_scores
+                }
+                all_players.append(player_info)
+            game_info["players"] = all_players
+
+            # return game info to user
+            return game_info
+
+        # any processing errors notify user
+        except Exception as error:
+            print error.message
+            return server_issue()
 
     def put(self, game_id):
         return "something"
