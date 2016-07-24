@@ -13,8 +13,8 @@ class TestHomeEndpoint(unittest.TestCase):
         Tests for valid status
         """
         response = self.app.get('/')
-        data = json.loads(response.data)
-        assert "Start bowling!" == data["message"]
+        data = response.data
+        assert "Start bowling!" in data
 
     def test_invalid_route(self):
         """

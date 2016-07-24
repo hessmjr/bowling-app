@@ -19,8 +19,16 @@ class Home(Resource):
         GET method for home endpoint
         :return: Status of application
         """
-        # TODO convert to usage text message
-        return {"message": "Start bowling!"}
+        message = "------------------ Start bowling! ------------------\n\n" + \
+                  "How to use api:\n\n" + \
+                  "GET '/' \t\t\t\t\t=> Status and usage\n" + \
+                  "GET '/games' \t\t\t\t=> List of all games\n" + \
+                  "POST '/games \t\t\t\t=> Create a new game\n" + \
+                  "GET '/games/{game_id}' \t\t=> " \
+                  "Retrieve specific game info\n" + \
+                  "PUT '/games/{game_id}' \t\t=> Send a bowl\n" + \
+                  "DELETE '/games/{game_id}' \t=> Finish game"
+        return Response(message, status=200)
 
 
 class AllGames(Resource):
@@ -43,7 +51,7 @@ class AllGames(Resource):
             return server_issue()
 
         # return list of all games
-        return all_games
+        return len(all_games)
 
     def post(self):
         """
