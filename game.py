@@ -1,4 +1,5 @@
 from mongoengine import *
+from datetime import datetime
 
 connect('bowlingdb')
 
@@ -27,16 +28,17 @@ class Game(Document):
     """
 
     """
-    #gameID = ObjectIdField(primary_key=True)
     players = ListField(EmbeddedDocumentField(Player), min_length=1,
                         max_length=4, required=True)
+    active = BooleanField(default=True)
+    dateStarted = DateTimeField(default=datetime.now)
     meta = {'collection': 'games'}
 
     @queryset_manager
-    def games(self, queryset):
+    def games(self, query_set):
         """
 
-        :param queryset:
+        :param query_set:
         :return:
         """
-        return queryset
+        return query_set
