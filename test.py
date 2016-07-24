@@ -1,6 +1,9 @@
 import unittest
 import api
 import json
+from mongoengine import connect
+
+from game import Game, Player
 
 
 class TestHomeEndpoint(unittest.TestCase):
@@ -39,13 +42,30 @@ class TestAllGamesEndpoint(unittest.TestCase):
 
     def setUp(self):
         self.app = api.app.test_client()
+        db = connect("bowlingdb")
+        db.drop_database("bowlingdb")
 
     def test_get_all_games(self):
         """
         Tests retrieving all games
         """
+        # add a game to database
+        new_players = [
+            "Calvin Johnson",
+            "Michael Jordan"
+        ]
+        players = []
+        for num, name in enumerate(new_players):
+            players.append(Player(playerID=(num + 1), name=name))
+        game = Game(players=players)
+        game.save()
+
+        # query api for list of games
         response = self.app.get('/games')
-        # TODO seed with couple games
+        assert '200' in response.status
+        data = json.loads(response.data)
+        assert list == type(data)
+        assert 1 == len(data)
 
     def test_create_valid_game(self):
         """

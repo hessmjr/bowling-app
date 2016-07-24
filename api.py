@@ -43,7 +43,20 @@ class AllGames(Resource):
         # grab essential info about each game
         try:
             for game in Game.games:
-                all_games.append(game)
+                game_info = dict()
+                players = []
+
+                # get useful info from each game
+                game_info["game_id"] = str(game.id)
+                game_info["active"] = game.active
+
+                # get each player's name
+                for player in game.players:
+                    players.append(player.name)
+                game_info["players"] = players
+
+                # return complete game listing
+                all_games.append(game_info)
 
         # any processing errors notify user
         except Exception as error:
@@ -51,7 +64,7 @@ class AllGames(Resource):
             return server_issue()
 
         # return list of all games
-        return len(all_games)
+        return all_games
 
     def post(self):
         """
@@ -135,7 +148,9 @@ def not_found(error=None):
     :param error: string message
     :return: 404 response
     """
-    message = 'URL: ' + request.url + "\n" + str(error)
+    message = 'URL: ' + request.url + "\n"
+    if error:
+        message += str(error)
     return Response(message, status=404)
 
 
@@ -147,7 +162,9 @@ def server_issue(error=None):
     :param error: string message
     :return:
     """
-    message = "Error processing request " + str(error)
+    message = "Internal error processing request"
+    if error:
+        print error
     return Response(message, status=500)
 
 
