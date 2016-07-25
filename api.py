@@ -335,9 +335,9 @@ def not_found(error=None):
     :param error: string message
     :return: 404 response
     """
-    message = 'URL: ' + request.url + "\n"
+    message = 'URL: ' + request.url
     if error:
-        message += str(error)
+        message += "\n" + str(error)
     return Response(message, status=404)
 
 

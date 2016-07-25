@@ -19,7 +19,7 @@ cookbook_file "/etc/supervisord.conf" do
     mode 0644
 end
 
-# Start supervisor services
+# Start supervisor to handle start and restarting API
 supervisor_service "BowlApp" do
     action :enable
     directory "/home/mark/BowlApp"
@@ -28,11 +28,3 @@ supervisor_service "BowlApp" do
     stdout_logfile_maxbytes "50MB"
     redirect_stderr true
 end
-
-# # start flask app
-# execute "start app" do
-#     command "flask BowlApp"
-# end
-# python_execute 'myapp.py' do
-#   user 'myuser'
-# end

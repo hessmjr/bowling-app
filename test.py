@@ -42,7 +42,7 @@ class TestAllGamesEndpoint(TestCase):
 
     def setUp(self):
         """
-        Setup before each test case
+        Setup app and database before test suite
         """
         self.app = app.test_client()
         db = connect("bowlingdb")
@@ -124,7 +124,7 @@ class TestGamesEndpoint(TestCase):
 
     def setUp(self):
         """
-        Set up before each test case
+        Setup app, database, and create a game before test cases
         """
         self.app = app.test_client()
         db = connect("bowlingdb")
