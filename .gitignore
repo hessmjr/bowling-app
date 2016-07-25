@@ -23,7 +23,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-.lock
+*.lock
 bak/
 
 # PyInstaller
@@ -95,3 +95,5 @@ ENV/
 
 # Vagrant
 .vagrant
+
+*.DS_Store
