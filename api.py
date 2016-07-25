@@ -1,8 +1,9 @@
+import json
+
 from flask import Flask, Response, request
 from flask_restful import Api, Resource
 from mongoengine import DoesNotExist
 from bson import ObjectId
-import json
 
 from datastore import Game, Player
 
@@ -11,7 +12,7 @@ api = Api(app)
 
 
 ################################
-# Build API resources
+# Build API Resources
 ################################
 
 class Home(Resource):
@@ -41,11 +42,13 @@ class AllGames(Resource):
         :return: List of all games in database
         """
         all_games = []
-        players = []
 
         # grab essential info about each game
         try:
             for game in Game.games:
+                players = []
+
+                # build each game's information map
                 game_info = {
                     "game_id": str(game.id),
                     "active": game.active
@@ -79,7 +82,7 @@ class AllGames(Resource):
             # build each new player
             players = []
             for num, name in enumerate(new_players):
-                players.append(Player(playerID=(num + 1), name=name))
+                players.append(Player(player_id=(num + 1), name=name))
 
             # build a new game
             game = Game(players=players)
@@ -122,14 +125,14 @@ class Games(Resource):
                 "date_started": str(game.date_started)
             }
 
-            # build player info
+            # build player info and scoresheet
             all_players = []
             for player in game.players:
                 player_info = {
-                    "player_id": player.playerID,
+                    "player_id": player.player_id,
                     "name": player.name,
                     "active": player.active,
-                    "scores": player.raw_scores  # TODO scoresheet?
+                    "scoresheet": Player.calc_score_sheet(player.raw_scores)
                 }
                 all_players.append(player_info)
             game_info["players"] = all_players
@@ -148,7 +151,68 @@ class Games(Resource):
         :return: GET endpoint
         """
         try:
-            return "something"
+            # check if game good
+            check = self.__query_game_id(game_id)
+            if type(check) != Game:
+                return check
+            else:
+                game = check
+
+            # check if game active
+            if not game.active:
+                return bad_request("Game is no longer active")
+
+            # validate roll value
+            score = int(request.data)
+            if not (0 <= score <= 10):
+                raise ValueError
+
+            # assign roll to next valid player
+            min_scores_len = 22
+            for player in game.players:
+                scores_len = len(player.raw_scores)
+
+                # if player is inactive then skip
+                if not player.active:
+                    continue
+
+                # check if player's next roll (players are sorted)
+                if scores_len < min_scores_len:
+                    min_scores_len = scores_len
+                    player_id = player.player_id
+                    scores = player.raw_scores
+
+            # check if second roll too high
+            if len(scores) < 19 and len(scores) % 2 == 1 \
+                    and scores[-1] + score > 10:
+                return bad_request("Second roll is too high")
+
+            # if roll is a 10 then add 0 too unless end frame
+            if score == 10 and len(scores) < 18:
+                scores += [score, 0]
+            else:
+                scores.append(score)
+
+            # update raw scores for player
+            game.players[player_id - 1].raw_scores = scores
+
+            # check if player still active
+            player_active = len(scores) < 20 \
+                or (sum(scores[18:]) > 10 and len(scores) < 21)
+            if not player_active:
+                game.players[player_id - 1].active = False
+
+            # check if game still active
+            if len(game.players) == player_id and not player_active:
+                game.active = False
+
+            # save updates and return updates to user
+            game.save()
+            return self.get(game_id)
+
+        # if roll is not an integer or in the right range
+        except ValueError:
+            return bad_request("Roll must be integer 0 - 10")
 
         # let user know of any internal error
         except Exception as exception:
@@ -160,6 +224,8 @@ class Games(Resource):
         :param game_id:
         :return:
         """
+        game_active = False
+
         try:
             # check if id valid and query for it
             check = self.__query_game_id(game_id)
@@ -186,12 +252,26 @@ class Games(Resource):
 
             # inactive player matching id unless already inactive
             for player in game.players:
-                if player.playerID == player_id and player.active:
-                    game.players[player_id - 1].active = False
-                    game.save()
-                elif player.playerID == player_id:
+                player_active = player.active
+
+                # if player id matches and active then update
+                if player.player_id == player_id and player_active:
+                    player_active = False
+                    game.players[player_id - 1].active = player_active
+
+                # if player id matches then player already inactive
+                elif player.player_id == player_id:
                     return bad_request("Player already inactive")
 
+                # check if any active players remain
+                if player_active:
+                    game_active = True
+
+            # update game status too
+            game.active = game_active
+
+            # save updates and return game info to user
+            game.save()
             return self.get(game_id)
 
         # error parsing player id to an int
@@ -221,8 +301,9 @@ class Games(Resource):
         except DoesNotExist:
             return not_found("Game ID can not be found")
 
+
 ################################
-# Add resources
+# Add endpoints to API
 ################################
 
 api.add_resource(Home, '/')
@@ -286,6 +367,5 @@ def server_issue(exception, error=None):
 
 if __name__ == '__main__':
     app.run(
-        debug=True,
         host='0.0.0.0'
     )

@@ -59,7 +59,7 @@ class TestAllGamesEndpoint(TestCase):
         ]
         players = []
         for num, name in enumerate(new_players):
-            players.append(Player(playerID=(num + 1), name=name))
+            players.append(Player(player_id=(num + 1), name=name))
         game = Game(players=players)
         game.save()
 
@@ -137,7 +137,7 @@ class TestGamesEndpoint(TestCase):
         ]
         players = []
         for num, name in enumerate(new_players):
-            players.append(Player(playerID=(num + 1), name=name))
+            players.append(Player(player_id=(num + 1), name=name))
         game = Game(players=players)
         game_info = game.save()
         self.valid_id = str(game_info.id)
@@ -165,15 +165,22 @@ class TestGamesEndpoint(TestCase):
         """
         Tests sending new scores to the game
         """
+        # send an invalid body
+        response = self.app.put('/games/' + self.valid_id, data='hi')
+        assert '400' in response.status
+
+        # send an invalid bowl
+        response = self.app.put('/games/' + self.valid_id, data='12')
+        assert '400' in response.status
+
+        # send a valid bowl
+        response = self.app.put('/games/' + self.valid_id, data='10')
+        assert '200' in response.status
+
         # test send score and game not active
-        # test send score and player not active
-        # test send score and not player turn
-        # test send two valid scores
-        # test send two scores and only one needed
-        # test send a strike and has strikes
-        # test send a spare and has strikes
-        # test first frame
-        # test final frame
+        self.app.delete('/games/' + self.valid_id)
+        response = self.app.put('/games/' + self.valid_id, data='10')
+        assert '400' in response.status
 
     def test_delete_game(self):
         """
@@ -217,6 +224,39 @@ class TestGamesEndpoint(TestCase):
         response = self.app.post('/games/5795434f0640fd14497c3888',
                                  data=json.dumps(players))
         assert '405' in response.status
+
+
+class TestScoring(TestCase):
+
+    def test_score_calculation(self):
+        """
+        Tests scoresheet method
+        """
+        # test 3 strikes
+        scores = [10, 0, 10, 0, 10, 0]
+        info = Player.calc_score_sheet(scores)
+        assert info["frame_results"][-1] == 'X'
+        assert info["total"] == 60
+
+        # test all strikes
+        scores = [10, 0, 10, 0, 10, 0, 10, 0, 10, 0, 10, 0,
+                  10, 0, 10, 0, 10, 0, 10, 10, 10]
+        info = Player.calc_score_sheet(scores)
+        assert info['frame_scores'][-1] == 30
+        assert info["total"] == 300
+
+        # test all spares
+        scores = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+                  5, 5, 5, 5, 5, 5, 10]
+        info = Player.calc_score_sheet(scores)
+        assert info["frame_results"][-1] == '5-5-X'
+        assert info["total"] == 155
+
+        # test various scores
+        scores = [3, 4, 10, 0, 5, 5, 10, 0]
+        info = Player.calc_score_sheet(scores)
+        assert info["frame_scores"][1] == 20
+        assert info["total"] == 57
 
 if __name__ == '__main__':
     main()
