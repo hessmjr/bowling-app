@@ -1,5 +1,5 @@
 # Bowling App
-Bowling scoring application.
+Simple bowling scoring application built using Python, Flask, and MongoDB.
 
 ## Installation
 You'll need the following tools to run the application:
@@ -17,15 +17,35 @@ After installing the above dependencies:
 ## Usage
 The application is RESTful and can be reached from any RESTful client.  Once vagrant is complete the following endpoints can be reached at `http://localhost:7878`:
 
-- Endpoint 1
+- `GET http://localhost:7878/` shows application status
+- `GET http://localhost:7878/games` retrieves a list of all games
+- `POST http://localhost:7878/games` creates a new game with new players formatted in the following:
+```json
+[
+    "First Last",
+    "First Last"
+]
+```
+- `GET http://localhost:7878/games/:game_id`retrieves detailed information about a game with the given game_id
+- `PUT http://localhost:7878/games/:game_id` sends the roll to the next player's turn.  Format roll as simple text (integer between 0 and 10):
+```
+10
+```
+- `DELETE http://localhost:7878/games/:game_id` inactivates a game unless the body of the request contains a valid player id, then that player is inactivated.  Format is simple text:
+```
+:player_id
+```
 
-Turn off server by ssh and supervisor off...
+Endpoints can be reached through any RESTful client or using an API such as cURL.  A POSTMAN collection has been supplied as well though.
+
+> To turn off the server either stop the vagrant using one of it's commands such as `vagrant halt`.  Or log in to the vagrant box using `vagrant ssh` and run command `supervisorctl stop all` as root user.
 
 ## Testing
 There is an accompanying test suite which seeds the database with game information and runs behavior testing.
 
 1. SSH into vagrant machine by using `vagrant ssh` in project root directory (if vagrant box is running)
-2. ...
+2. Navigate to the project directory in the vagrant box `/home/mark/BowlApp`
+3. Run command `python test.py` to see the results of the unit tests created
 
 ## Thoughts
 Some of my thoughts on the design of the application:
