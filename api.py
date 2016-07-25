@@ -1,5 +1,6 @@
 from flask import Flask, Response, request
 from flask_restful import Api, Resource
+from mongoengine import DoesNotExist
 from bson import ObjectId
 import json
 
@@ -40,18 +41,17 @@ class AllGames(Resource):
         :return: List of all games in database
         """
         all_games = []
+        players = []
 
         # grab essential info about each game
         try:
             for game in Game.games:
-                game_info = dict()
-
-                # get useful info from each game
-                game_info["game_id"] = str(game.id)
-                game_info["active"] = game.active
+                game_info = {
+                    "game_id": str(game.id),
+                    "active": game.active
+                }
 
                 # get each player's name
-                players = []
                 for player in game.players:
                     players.append(player.name)
                 game_info["players"] = players
@@ -105,11 +105,15 @@ class Games(Resource):
 
     def get(self, game_id):
         """
-
-        :param game_id:
-        :return:
+        GET method for retrieving a single game's info
+        :param game_id: id to query db on
+        :return: full game information
         """
         try:
+            # check if valid object id
+            if len(game_id) != 24:
+                return bad_request("Invalid game id")
+
             # try to query for game id and convert to python object
             game = Game.games.get(id=ObjectId(game_id))
 
@@ -119,7 +123,6 @@ class Games(Resource):
                 "active": game.active,
                 "date_started": str(game.date_started)
             }
-            print game.date_started
 
             # build player info
             all_players = []
@@ -127,13 +130,17 @@ class Games(Resource):
                 player_info = {
                     "name": player.name,
                     "active": player.active,
-                    "scores": player.raw_scores
+                    "scores": player.raw_scores  # TODO scoresheet?
                 }
                 all_players.append(player_info)
             game_info["players"] = all_players
 
             # return game info to user
             return game_info
+
+        # if query throws non-existent error then inform user
+        except DoesNotExist:
+            return not_found("Game ID can not be found")
 
         # any processing errors notify user
         except Exception as error:
@@ -144,6 +151,11 @@ class Games(Resource):
         return "something"
 
     def delete(self, game_id):
+        """
+        DELETE endpoint for ending a game early
+        :param game_id:
+        :return:
+        """
         return "gone"
 
 
