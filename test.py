@@ -140,7 +140,7 @@ class TestGamesEndpoint(TestCase):
             players.append(Player(playerID=(num + 1), name=name))
         game = Game(players=players)
         game_info = game.save()
-        self.valid_id = game_info.id
+        self.valid_id = str(game_info.id)
 
     def test_getting_game(self):
         """
@@ -157,8 +157,9 @@ class TestGamesEndpoint(TestCase):
         assert '404' in response.status
 
         # request with a valid id
-        response = self.app.get('/games/' + str(self.valid_id))
+        response = self.app.get('/games/' + self.valid_id)
         assert '200' in response.status
+        assert self.valid_id in response.data
 
     def test_sending_scores(self):
         """
@@ -178,11 +179,32 @@ class TestGamesEndpoint(TestCase):
         """
         Tests inactiving games
         """
+        # Delete invalid player
+        response = self.app.delete('/games/' + self.valid_id, data='hi')
+        assert '400' in response.status
+        response = self.app.delete('/games/' + self.valid_id, data='6')
+        assert '400' in response.status
+
+        # Delete valid player
+        response = self.app.delete('/games/' + self.valid_id, data='1')
+        assert '200' in response.status
+
+        # Delete inactive player
+        response = self.app.delete('/games/' + self.valid_id, data='1')
+        assert '400' in response.status
+
         # Delete an invalid game
+        response = self.app.delete('/games/5795434f0640fd14497c3888')
+        assert '404' in response.status
 
         # Delete a valid game
+        response = self.app.delete('/games/' + self.valid_id)
+        assert '200' in response.status
+        assert self.valid_id in response.data
 
         # Delete an inactive game
+        response = self.app.delete('/games/' + self.valid_id)
+        assert '400' in response.status
 
     def test_invalid_method(self):
         """

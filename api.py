@@ -29,7 +29,7 @@ class Home(Resource):
                   "GET '/games/{game_id}' \t\t=> " \
                   "Retrieve specific game info\n" + \
                   "PUT '/games/{game_id}' \t\t=> Send a bowl\n" + \
-                  "DELETE '/games/{game_id}' \t=> Finish game"
+                  "DELETE '/games/{game_id}' \t=> Inactivate game or player"
         return Response(message, status=200)
 
 
@@ -62,9 +62,8 @@ class AllGames(Resource):
             return all_games
 
         # any processing errors notify user
-        except Exception as error:
-            print error.message
-            return server_issue()
+        except Exception as exception:
+            return server_issue(exception, error="GET AllGames")
 
     def post(self):
         """
@@ -96,9 +95,8 @@ class AllGames(Resource):
                             mimetype='application/json')
 
         # any processing errors notify user
-        except Exception as error:
-            print error.message
-            return server_issue()
+        except Exception as exception:
+            return server_issue(exception, "POST AllGames")
 
 
 class Games(Resource):
@@ -128,6 +126,7 @@ class Games(Resource):
             all_players = []
             for player in game.players:
                 player_info = {
+                    "player_id": player.playerID,
                     "name": player.name,
                     "active": player.active,
                     "scores": player.raw_scores  # TODO scoresheet?
@@ -139,9 +138,8 @@ class Games(Resource):
             return game_info
 
         # any processing errors notify user
-        except Exception as error:
-            print error.message
-            return server_issue()
+        except Exception as exception:
+            return server_issue(exception, "GET Games")
 
     def put(self, game_id):
         """
@@ -149,9 +147,14 @@ class Games(Resource):
         :param game_id: game to update with a score
         :return: GET endpoint
         """
-        return "something"
+        try:
+            return "something"
 
-    def delete(self, game_id):  # TODO end player early too
+        # let user know of any internal error
+        except Exception as exception:
+            return server_issue(exception, "PUT Games")
+
+    def delete(self, game_id):
         """
         DELETE endpoint for ending a game early
         :param game_id:
@@ -165,13 +168,39 @@ class Games(Resource):
             else:
                 game = check
 
-            something = game.delete()
-            print str(something.id)
-            return "delete"
+            # if game already inactive return bad request
+            if not game.active:
+                return bad_request("Game already inactive")
 
-        except Exception as error:
-            print error.message
-            return server_issue()
+            # if not trying to inactive player inactivate game
+            if request.data is None or len(request.data) < 1:
+                game.update(active=False)
+                return self.get(game_id)
+
+            # parse player id to an int
+            player_id = int(request.data)
+
+            # check if valid player id
+            if not (0 < player_id < len(game.players) + 1):
+                return bad_request("Player ID outside integer range")
+
+            # inactive player matching id unless already inactive
+            for player in game.players:
+                if player.playerID == player_id and player.active:
+                    game.players[player_id - 1].active = False
+                    game.save()
+                elif player.playerID == player_id:
+                    return bad_request("Player already inactive")
+
+            return self.get(game_id)
+
+        # error parsing player id to an int
+        except ValueError:
+            return bad_request("Player ID not a valid integer")
+
+        # let user know of any internal error
+        except Exception as exception:
+            return server_issue(exception, "DELETE Games")
 
     def __query_game_id(self, game_id):
         """
@@ -232,13 +261,19 @@ def not_found(error=None):
 
 
 @app.errorhandler(500)
-def server_issue(error=None):
+def server_issue(exception, error=None):
     """
     Response if there was an issue processing a request
 
+    :param exception: exception causing issued
     :param error: string message
     :return:
     """
+    # log error
+    print "Error type: " + str(type(exception))
+    print "Message: " + str(exception.message)
+
+    # build response to user
     message = "Internal error processing request"
     if error:
         print error
