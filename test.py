@@ -3,7 +3,7 @@ from mongoengine import connect
 import json
 
 from api import app
-from game import Game, Player
+from datastore import Game, Player
 
 
 class TestHomeEndpoint(TestCase):

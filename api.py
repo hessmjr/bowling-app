@@ -4,7 +4,7 @@ from mongoengine import DoesNotExist
 from bson import ObjectId
 import json
 
-from game import Game, Player
+from datastore import Game, Player
 
 app = Flask(__name__)
 api = Api(app)
@@ -110,12 +110,12 @@ class Games(Resource):
         :return: full game information
         """
         try:
-            # check if valid object id
-            if len(game_id) != 24:
-                return bad_request("Invalid game id")
-
-            # try to query for game id and convert to python object
-            game = Game.games.get(id=ObjectId(game_id))
+            # check if id valid and query for it
+            check = self.__query_game_id(game_id)
+            if type(check) != Game:
+                return check
+            else:
+                game = check
 
             # build game info object
             game_info = {
@@ -138,26 +138,59 @@ class Games(Resource):
             # return game info to user
             return game_info
 
-        # if query throws non-existent error then inform user
-        except DoesNotExist:
-            return not_found("Game ID can not be found")
-
         # any processing errors notify user
         except Exception as error:
             print error.message
             return server_issue()
 
     def put(self, game_id):
+        """
+        PUT endpoint for sending a new bowling roll
+        :param game_id: game to update with a score
+        :return: GET endpoint
+        """
         return "something"
 
-    def delete(self, game_id):
+    def delete(self, game_id):  # TODO end player early too
         """
         DELETE endpoint for ending a game early
         :param game_id:
         :return:
         """
-        return "gone"
+        try:
+            # check if id valid and query for it
+            check = self.__query_game_id(game_id)
+            if type(check) != Game:
+                return check
+            else:
+                game = check
 
+            something = game.delete()
+            print str(something.id)
+            return "delete"
+
+        except Exception as error:
+            print error.message
+            return server_issue()
+
+    def __query_game_id(self, game_id):
+        """
+        Method that checks if game id is valid and queries for it
+        :param game_id:
+        :return:
+        """
+        try:
+            # check if valid object id
+            if len(game_id) != 24:
+                return bad_request("Invalid game id")
+
+            # try to query for game id and convert to python object
+            game = Game.games.get(id=ObjectId(game_id))
+            return game
+
+        # if query throws non-existent error then inform user
+        except DoesNotExist:
+            return not_found("Game ID can not be found")
 
 ################################
 # Add resources
