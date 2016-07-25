@@ -31,30 +31,21 @@ The application is RESTful and can be reached from any RESTful client.  Once vag
 ```
 10
 ```
-- `DELETE http://localhost:7878/games/:game_id` inactivates a game unless the body of the request contains a valid player id, then that player is inactivated.  Format is simple text:
+- `DELETE http://localhost:7878/games/:game_id` deactivates a game unless the body of the request contains a valid player id, then that player is deactivated.  Format is simple text (an integer 1 - 4):
 ```
 :player_id
 ```
 
 Endpoints can be reached through any RESTful client or using an API such as cURL.  A POSTMAN collection has been supplied as well though.
 
-> To turn off the server either stop the vagrant using one of it's commands such as `vagrant halt`.  Or log in to the vagrant box using `vagrant ssh` and run command `supervisorctl stop all` as root user.
+> To turn off the server either stop the vagrant box using one of it's commands such as `vagrant halt` or `vagrant destroy`.  Or SSH in to the vagrant box using `vagrant ssh` and run command `supervisorctl stop all` as root user.
 
 ## Testing
 There is an accompanying test suite which seeds the database with game information and runs behavior testing.
 
-1. SSH into vagrant machine by using `vagrant ssh` in project root directory (if vagrant box is running)
+1. SSH into vagrant machine by using `vagrant ssh` in project root directory
 2. Navigate to the project directory in the vagrant box `/home/mark/BowlApp`
 3. Run command `python test.py` to see the results of the unit tests created
-
-## Thoughts
-Some of my thoughts on the design of the application:
-
-- Used Python's Flask framework due to its simple nature for quick and easy development (considered Bottle and Django)
-- For persistent storage I utilized MongoDB.  The document store allowed the greatest freedom for data modeling as well as simple deployment and ease of use.
-- An RDB like MySQL would be a decent choice too, however adds unnecessary complexity to data model.  Would require a games table, players table, scores table, and join tables which could require a lot more additional setup.
-- Also began development with plan to use Redis for easy use and deployment as well as great performance.  However unnecessary database calls would be required due to its key, value nature with no ability for nested objects.
-- Focused on behavior testing for endpoints instead of unit testing for individual methods due to time constraints and fluid nature of the design
 
 ## Contributors
 
