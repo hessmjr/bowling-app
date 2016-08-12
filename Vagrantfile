@@ -16,6 +16,7 @@ Vagrant.configure(2) do |config|
     config.vm.synced_folder ".", "/home/mark/BowlApp"
 
     # provision vagrant box with chef
+    config.omnibus.chef_version = '12.10.24'
     config.vm.provision "chef_solo" do |chef|
         chef.channel = "stable"
         chef.version = "12.10.24"

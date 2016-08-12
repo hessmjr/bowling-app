@@ -8,6 +8,9 @@ You'll need the following tools to run the application:
 - [Vagrant](https://www.vagrantup.com/downloads.html)
 - [ChefDK](https://downloads.chef.io/chef-dk/)
 
+1. From terminal need to install Vagrant plugins to work with Chef, execute `vagrant plugin install vagrant-berkshelf`
+2. Next execute `vagrant plugin install vagrant-omnibus`
+
 After installing the above dependencies:
 
 1. Clone down the repo
