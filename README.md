@@ -48,7 +48,7 @@ There is an accompanying test suite which seeds the database with game informati
 
 1. SSH into vagrant machine by using `vagrant ssh` in project root directory
 2. Navigate to the project directory in the vagrant box `/home/mark/BowlApp`
-3. Run command `python test.py` to see the results of the tests created
+3. Run command `python app/test.py` to see the results of the tests created
 
 ## Contributors
 

@@ -6,14 +6,14 @@ Vagrant.configure(2) do |config|
     config.vm.box = "ubuntu/trusty64"
 
     # forward ports to host computer
-    config.vm.network :forwarded_port, guest: 5000, host: 7878
+    config.vm.network :forwarded_port, guest: 5000, host: 5000
 
     # Berksfile setup
-    config.berkshelf.berksfile_path = "deploy/Berksfile"
+    config.berkshelf.berksfile_path = "./Berksfile"
     config.berkshelf.enabled = true
 
     # allow host to access files within VM
-    config.vm.synced_folder ".", "/home/mark/BowlApp"
+    config.vm.synced_folder ".", "/home/mark/bowling-tracker"
 
     # provision vagrant box with chef
     config.omnibus.chef_version = '12.10.24'
