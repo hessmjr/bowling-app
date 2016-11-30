@@ -5,11 +5,10 @@ Simple RESTful bowling score tracker built using Python, Flask, and MongoDB.
 You'll need the following tools to run the application:
 
 - [Virtual Box](https://www.virtualbox.org/)
+- [ChefDK](https://downloads.chef.io/chef-dk/mac/)
 - [Vagrant](https://www.vagrantup.com/downloads.html)
-- [ChefDK](https://downloads.chef.io/chef-dk/)
-
-1. From terminal need to install Vagrant plugins to work with Chef, execute `vagrant plugin install vagrant-berkshelf`
-2. Next execute `vagrant plugin install vagrant-omnibus`
+    - [Vagrant Berkshelf Plugin](https://github.com/berkshelf/vagrant-berkshelf)
+    - [Vagrant Omnibus Plugin](https://github.com/chef/vagrant-omnibus)
 
 After installing the above dependencies:
 
