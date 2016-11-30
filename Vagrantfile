@@ -20,6 +20,6 @@ Vagrant.configure(2) do |config|
     config.vm.provision "chef_solo" do |chef|
         chef.channel = "stable"
         chef.version = "12.10.24"
-        chef.add_recipe "BowlApp::default"
+        chef.add_recipe "chef::default"
     end
 end

@@ -1,9 +1,8 @@
-name             'BowlApp'
+name             'chef'
 maintainer       'Mark Hess'
-maintainer_email 'na'
 license          'All rights reserved'
-description      'Deployment script for BowlApp'
-version          '0.1.0'
+description      'Deployment script for bowling tracker'
+
 depends          'mongodb'
 depends          'poise-python'
 depends          'supervisor'
