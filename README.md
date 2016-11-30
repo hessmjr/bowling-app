@@ -1,5 +1,5 @@
 # Bowling Tracker
-Simple bowling score tracker built using Python, Flask, and MongoDB.
+Simple RESTful bowling score tracker built using Python, Flask, and MongoDB.
 
 ## Installation
 You'll need the following tools to run the application:

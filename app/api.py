@@ -15,7 +15,7 @@ api = Api(app)
 # Build API Resources
 ################################
 
-class Home(Resource):
+class HomeRoute(Resource):
 
     def get(self):
         """
@@ -34,7 +34,7 @@ class Home(Resource):
         return Response(message, status=200)
 
 
-class AllGames(Resource):
+class GamesRoute(Resource):
 
     def get(self):
         """
@@ -76,6 +76,7 @@ class AllGames(Resource):
         # try to parse the json request
         try:
             new_players = json.loads(request.data)
+            print 'here'
             if not (0 < len(new_players) < 5):
                 return bad_request("Invalid number of players")
 
@@ -83,12 +84,12 @@ class AllGames(Resource):
             players = []
             for num, name in enumerate(new_players):
                 players.append(Player(player_id=(num + 1), name=name))
-
+            print 'here2'
             # build a new game
             game = Game(players=players)
             new_game = game.save()
             game_id = str(new_game.id)
-
+            print 'here3'
             # return newly created game ID to user
             message = {
                 "gameID": game_id,
@@ -102,7 +103,7 @@ class AllGames(Resource):
             return server_issue(exception, "POST AllGames")
 
 
-class Games(Resource):
+class GameRoute(Resource):
 
     def get(self, game_id):
         """
@@ -165,26 +166,27 @@ class Games(Resource):
             # validate roll value
             score = int(request.data)
             if not (0 <= score <= 10):
-                raise ValueError
+                return bad_request("Roll must be integer between 0 - 10")
 
             # assign roll to next valid player
-            min_scores_len = 22
+            max_scores_len = 22
             for player in game.players:
-                scores_len = len(player.raw_scores)
 
                 # if player is inactive then skip
                 if not player.active:
                     continue
 
                 # check if player's next roll (players are sorted)
-                if scores_len < min_scores_len:
-                    min_scores_len = scores_len
+                if len(player.raw_scores) < max_scores_len:
+                    max_scores_len = len(player.raw_scores)
                     player_id = player.player_id
                     scores = player.raw_scores
 
+                if len(player.raw_scores) % 2 == 1:
+                    break
+
             # check if second roll too high
-            if len(scores) < 19 and len(scores) % 2 == 1 \
-                    and scores[-1] + score > 10:
+            if len(scores) < 19 and len(scores) % 2 == 1 and scores[-1] + score > 10:
                 return bad_request("Second roll is too high")
 
             # if roll is a 10 then add 0 too unless end frame
@@ -209,10 +211,6 @@ class Games(Resource):
             # save updates and return updates to user
             game.save()
             return self.get(game_id)
-
-        # if roll is not an integer or in the right range
-        except ValueError:
-            return bad_request("Roll must be integer 0 - 10")
 
         # let user know of any internal error
         except Exception as exception:
@@ -306,9 +304,9 @@ class Games(Resource):
 # Add endpoints to API
 ################################
 
-api.add_resource(Home, '/')
-api.add_resource(AllGames, '/games')
-api.add_resource(Games, '/games/<game_id>')
+api.add_resource(HomeRoute, '/')
+api.add_resource(GamesRoute, '/games')
+api.add_resource(GameRoute, '/games/<game_id>')
 
 
 ################################
@@ -367,5 +365,6 @@ def server_issue(exception, error=None):
 
 if __name__ == '__main__':
     app.run(
+        debug=True,
         host='0.0.0.0'
     )
