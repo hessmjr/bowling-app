@@ -76,7 +76,7 @@ class GamesRoute(Resource):
         # try to parse the json request
         try:
             new_players = json.loads(request.data)
-            print 'here'
+
             if not (0 < len(new_players) < 5):
                 return bad_request("Invalid number of players")
 
@@ -84,12 +84,12 @@ class GamesRoute(Resource):
             players = []
             for num, name in enumerate(new_players):
                 players.append(Player(player_id=(num + 1), name=name))
-            print 'here2'
+
             # build a new game
             game = Game(players=players)
             new_game = game.save()
             game_id = str(new_game.id)
-            print 'here3'
+
             # return newly created game ID to user
             message = {
                 "gameID": game_id,
